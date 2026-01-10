@@ -1,5 +1,4 @@
 
-````markdown
 # KYC XML Error Classifier
 
 A machine learning project that automatically detects KYC XML request errors using TF-IDF and Logistic Regression.
