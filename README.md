@@ -1,7 +1,3 @@
-Absolutely — here is your full README **cleaned, deduplicated, and properly formatted in Markdown**
-Just copy-paste into `README.md` 
-
----
 
 ```markdown
 #  KYC XML Error Classifier
@@ -139,22 +135,5 @@ print(prediction[0])    # e.g., "VALERR-102"
 *  Upgrade to BERT or fine-tune a small LLM
 * Add rule-based XML checks before ML
 *  Deploy using FastAPI or Streamlit UI
-
----
-
-
-
-
----
-
-###  If you like this project, feel free to:
-
-* Fork it
-* Add new error generators
-* Contribute real sample KYC XML
-* Experiment with more models
-* Open an issue or PR 
-
-```
 
 
