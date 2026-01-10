@@ -134,24 +134,8 @@ print(prediction[0])    # e.g., "VALERR-102"
 
 ---
 
-## Author
 
-Built by Abinaya
-Python • Machine Learning • XML processing
 
----
 
-If you would like enhancements such as:
 
-* requirements.txt
-* virtual environment guide
-* API deployment instructions
-* more datasets
-  just ask.
-
-```
-
----
-
-Done! Drop this directly into your repo 🎉
-```
+]
