@@ -19,14 +19,16 @@ The system reads SOAP/XML KYC requests, learns patterns that trigger API failure
 ---
 
 ## Project Structure
-
+```
 codeerrordetector/
 │
 ├─ kyc_errors.jsonl            # Training/test dataset
 ├─ generate_dataset.py         # Script to generate sample XML with errors
 ├─ loadingdataset.py           # Model training and evaluation
 ├─ kyc_error_classifier.pkl    # Saved trained model
-└─ README.md                   # Documentation
+└─ README.md   
+```
+# Documentation
 
 ---
 
