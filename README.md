@@ -136,8 +136,20 @@ print(prediction[0])    # e.g., "VALERR-102"
 
 ---
 
+## Results
 
+SVM Classifier:
+              precision    recall  f1-score   support
 
+ AUTHERR-001       1.00      1.00      1.00         3
+  BUSERR-310       1.00      1.00      1.00         1
+     SUCCESS       1.00      1.00      1.00         7
+  VALERR-002       1.00      1.00      1.00         1
+  VALERR-102       1.00      1.00      1.00         4
+  VALERR-103       1.00      1.00      1.00         1
+  WEBERR-005       1.00      1.00      1.00         1
+  XMLERR-001       1.00      1.00      1.00         2
 
-
-]
+    accuracy                           1.00        20
+   macro avg       1.00      1.00      1.00        20
+weighted avg       1.00      1.00      1.00        20
