@@ -139,6 +139,7 @@ print(prediction[0])    # e.g., "VALERR-102"
 ## Results
 
 SVM Classifier:
+```
               precision    recall  f1-score   support
 
  AUTHERR-001       1.00      1.00      1.00         3
@@ -153,3 +154,4 @@ SVM Classifier:
     accuracy                           1.00        20
    macro avg       1.00      1.00      1.00        20
 weighted avg       1.00      1.00      1.00        20
+```
