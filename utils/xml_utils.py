@@ -25,3 +25,19 @@ def extract_field_value(root, field_name: str):
 
     elem = root.find(f".//{field_name}")
     return elem.text if elem is not None else None
+
+
+def replace_field_value(xml: str, field_name: str, new_value: str) -> str:
+    """
+    Replace text value of a field in the XML string.
+    Returns the updated XML string or original if failed.
+    """
+    try:
+        root = ET.fromstring(xml)
+        elem = root.find(f".//{field_name}")
+        if elem is not None:
+            elem.text = new_value
+            return ET.tostring(root, encoding="unicode")
+        return xml
+    except:
+        return xml

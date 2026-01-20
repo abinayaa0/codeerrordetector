@@ -7,7 +7,7 @@ A comprehensive system for detecting, localizing, and automatically fixing error
 ## Features
 
 ### 1. ML Error Classification
-- **Technology**: TF-IDF Vectorization + Logistic Regression / SVM.
+- **Technology**: TF-IDF Vectorization + Logistic Regression and  SVM. The latter had better results
 - **Function**: Predicts error codes (e.g., `VALERR-102`) from raw XML patterns.
 - **Performance**: High accuracy on known error types.
 - **Offline**: Works without external dependencies after training.
@@ -74,7 +74,7 @@ pip install pandas scikit-learn joblib
 ### 1. Start the API Server
 Run the FastAPI server using `uvicorn`:
 ```powershell
-& C:/Path/To/Python313/python.exe -m uvicorn api:app --reload
+& C:/Users/Abinaya/AppData/Local/Programs/Python/Python313/python.exe -m uvicorn api:app --reload
 ```
 *Server runs on `http://127.0.0.1:8000`*
 
@@ -95,11 +95,14 @@ curl -X POST "http://127.0.0.1:8000/auto-fix-xml" \
 ```json
 {
   "error_code": "VALERR-102",
+  "confidence": 0.96,
   "fix_strategy": "rule",
   "auto_fix_applied": true,
-  "original_value": "123",
-  "fixed_value": "000123",
-  "explanation": "Invalid PIN code format"
+  "original_value": "45",
+  "fixed_value": "000045",
+  "explanation": "Invalid PIN code format",
+  "corrected_xml": "<KYC><PIN>000045</PIN></KYC>",
+  "result": "FIXED"
 }
 ```
 
