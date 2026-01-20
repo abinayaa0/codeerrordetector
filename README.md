@@ -1,157 +1,148 @@
+# Code Error Detector & Auto-Fixer
 
-# KYC XML Error Classifier
-
-A machine learning project that automatically detects KYC XML request errors using TF-IDF and Logistic Regression.
-
-The system reads SOAP/XML KYC requests, learns patterns that trigger API failures, and predicts likely error codes — without hand-written validation rules.
+A comprehensive system for detecting, localizing, and automatically fixing errors in KYC XML requests. This project combines Machine Learning for classification with a dual-strategy (Rule-based + LLM) engine for remediation.
 
 ---
 
 ## Features
 
-- Automatically classifies XML into error categories  
-- Fast and lightweight (no GPU required)  
-- Works offline after training  
-- Learns from examples instead of rules  
-- Saves trained model to reuse later  
-- Easy to retrain when new errors appear  
+### 1. ML Error Classification
+- **Technology**: TF-IDF Vectorization + Logistic Regression / SVM.
+- **Function**: Predicts error codes (e.g., `VALERR-102`) from raw XML patterns.
+- **Performance**: High accuracy on known error types.
+- **Offline**: Works without external dependencies after training.
+
+### 2. Auto-Remediation Engine
+- **Localization**: Pinpoints exactly where the error occurred in the XML (Tag, Value, or Structure).
+- **Hybrid Fix Strategy**:
+    - **Rule-Based**: Deterministic fixes for known formats (e.g., padding PINs, formatting dates).
+    - **LLM-Based**: Uses `Qwen2.5-Coder` (via Ollama) to repair complex structural XML errors (missing tags, malformed syntax).
+- **Reliability**: Includes retry logic (max 2 retries) and validation for LLM outputs.
+
+### 3. API Service
+- **FastAPI**: Provides a REST endpoint to classify and fix errors in real-time.
+- **Swagger UI**: Interactive documentation at `/docs`.
 
 ---
 
 ## Project Structure
-```
+
+```text
 codeerrordetector/
 │
-├─ kyc_errors.jsonl            # Training/test dataset
-├─ generate_dataset.py         # Script to generate sample XML with errors
-├─ loadingdataset.py           # Model training and evaluation
-├─ kyc_error_classifier.pkl    # Saved trained model
-└─ README.md   
+├── api.py                  # FastAPI application entry point
+├── kyc_errors.jsonl        # Training dataset
+├── README.md               # This file
+│
+├── engine/                 # Core Logic
+│   ├── localize.py         # Error localization (Field/XML Structure)
+│   ├── fix_rules.py        # Deterministic fixes (PIN, Date)
+│   ├── llm_fix.py          # LLM integration (Ollama/Qwen)
+│   ├── orchestrator.py     # Manages the fix workflow
+│   └── error_registry.py   # Definitions of errors and strategies
+│
+├── utils/
+│   └── xml_utils.py        # XML parsing helpers
+│
+└── [Scripts]
+    ├── generate_dataset.py # Create synthetic training data
+    ├── loadingdataset.py   # Train and save ML models
+    └── test_*.py           # Verification scripts
 ```
-# Documentation
 
 ---
 
-## Dataset Format (JSONL)
+## Installation
 
-Each line in `kyc_errors.jsonl` contains:
+### Prerequisites
+1.  **Python 3.13** (Recommended for API/Engine)
+2.  **Ollama** (Required for LLM fixes)
+    - Install Ollama from [ollama.com](https://ollama.com)
+    - Pull the model: `ollama pull qwen2.5-coder`
 
-```json
-{
-  "request_xml": "<Envelope>...</Envelope>",
-  "response_xml": "<Envelope>...</Envelope>",
-  "error_label": "VALERR-102"
-}
-````
-
-`error_label` is the target output.
-
----
-
-## How the Model Works
-
-### 1. TF-IDF Vectorization
-
-Converts XML text into numeric features by:
-
-* Counting word frequency (TF)
-* Boosting rare but meaningful tokens (IDF)
-* Down-weighting common XML tags
-
-### 2. Logistic Regression Classifier
-
-Learns correlations such as:
-
-* "invalid" + "pin" → VALERR-102
-* "bad user" → AUTHERR-001
-* Missing closing tags → XMLERR-001
-
-This approach is simple, fast, reliable, and effective for structured text.
-
----
-
-## Install Dependencies
-
-Use Python 3.10:
-
+### Dependencies
 ```bash
+pip install fastapi uvicorn requests
+# For ML training (requires Python 3.10 due to scikit-learn limits):
 pip install pandas scikit-learn joblib
 ```
 
-Note: scikit-learn does not currently support Python 3.13.
-
 ---
 
-## Train and Evaluate the Model
+## Usage
 
-Run:
+### 1. Start the API Server
+Run the FastAPI server using `uvicorn`:
+```powershell
+& C:/Path/To/Python313/python.exe -m uvicorn api:app --reload
+```
+*Server runs on `http://127.0.0.1:8000`*
 
+### 2. Auto-Fix an Error (Example)
+Send a POST request to `/auto-fix-xml`:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/auto-fix-xml" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "xml": "<KYC><PIN>123</PIN></KYC>",
+           "error_code": "VALERR-102",
+           "confidence": 0.98
+         }'
+```
+
+**Response:**
+```json
+{
+  "error_code": "VALERR-102",
+  "fix_strategy": "rule",
+  "auto_fix_applied": true,
+  "original_value": "123",
+  "fixed_value": "000123",
+  "explanation": "Invalid PIN code format"
+}
+```
+
+### 3. Train the ML Model
+(Use Python 3.10)
 ```bash
 python loadingdataset.py
 ```
-
-This script will:
-
-* Load the dataset
-* Merge XML text fields
-* Split into training and testing sets
-* Train the classifier
-* Print classification metrics
-* Save the model to `kyc_error_classifier.pkl`
+This processes `kyc_errors.jsonl` and saves `kyc_error_classifier.pkl`.
 
 ---
 
-## Predict Errors from New XML
+## Testing
 
-```python
-import joblib
+We have included several test scripts to verify different components:
 
-clf = joblib.load("kyc_error_classifier.pkl")
+| Script | Purpose |
+| :--- | :--- |
+| `test_localize.py` | Checks if the system correctly identifies the location of errors. |
+| `test_fix_engine.py` | Verifies the orchestrator logic for Rule-based fixes. |
+| `test_llm_fix.py` | Tests the Ollama integration for fixing structural XML errors. |
+| `test_valerr_103.py` | Verifies the specific Date Format fix. |
+| `test_api_llm.py` | End-to-end test of the API calling the LLM. |
 
-xml_request = "<Envelope> ... </Envelope>"
-prediction = clf.predict([xml_request])
-
-print(prediction[0])    # e.g., "VALERR-102"
+Run any test:
+```powershell
+python test_llm_fix.py
 ```
 
 ---
 
-## Project Goals
+## System Logic
 
-* Learn patterns behind KYC validation failures
-* Detect errors without rigid schemas or rule engines
-* Complement existing XML validators
-* Improve onboarding and debugging efficiency
+### Fix Selection Strategy
+The `process_xml` function decides how to handle an error based on `engine/fix_selector.py`:
 
----
+1.  **Check Registry**: Is the error known? (`error_registry.py`)
+2.  **Check Fixability**: Is `fixable=True`?
+3.  **Check Confidence**: Is the detection confidence > 0.90?
+4.  **Select Strategy**:
+    - `rule`: Use `fix_rules.py` (Fast, 100% reliable).
+    - `llm`: Use `llm_fix.py` (For complex structure, creates new valid XML).
+    - `none`: Return diagnosis only.
 
-## Future Improvements
-
-* Generate more synthetic samples (500–5000+)
-* Balance the number of samples per error type
-* Try SVM, Random Forest, or Naive Bayes
-* Upgrade to BERT or fine-tune an LLM
-* Add rule-based XML checks before ML
-* Deploy with FastAPI or Streamlit
-
----
-
-## Results
-
-SVM Classifier:
-```
-              precision    recall  f1-score   support
-
- AUTHERR-001       1.00      1.00      1.00         3
-  BUSERR-310       1.00      1.00      1.00         1
-     SUCCESS       1.00      1.00      1.00         7
-  VALERR-002       1.00      1.00      1.00         1
-  VALERR-102       1.00      1.00      1.00         4
-  VALERR-103       1.00      1.00      1.00         1
-  WEBERR-005       1.00      1.00      1.00         1
-  XMLERR-001       1.00      1.00      1.00         2
-
-    accuracy                           1.00        20
-   macro avg       1.00      1.00      1.00        20
-weighted avg       1.00      1.00      1.00        20
-```
+### LLM Robustness
+The LLM integration uses a **Retry Mechanism** (Max 2 retries) and a prompt engineered for XML structure repair. It validates output via `xml_validator.py` before accepting it.

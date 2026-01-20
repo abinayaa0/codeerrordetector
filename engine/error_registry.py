@@ -33,14 +33,15 @@ ERROR_REGISTRY = {
         "field": "PIN",
         "fixable": True,
         "fix_strategy": "rule",
-        "description": "Invalid PIN code format"
+        "description": "Invalid PIN code format" 
     },
 
     "VALERR-103": {
         "type": "validation",
         "field": "DOB",
-        "fixable": False,
-        "description": "Invalid date format"
+        "fixable": True,
+        "fix_strategy": "rule",
+        "description": "Invalid date format" 
     },
 
     # -----------------------
@@ -85,6 +86,7 @@ ERROR_REGISTRY = {
     }
 }
 
+#getting values from the dictionaries:
 
 def is_known_error(error_code: str) -> bool:
     """
